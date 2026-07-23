@@ -10,6 +10,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from config.base import Base
 
 if TYPE_CHECKING:
+    from models.bank_transaction import BankTransaction
     from models.user import User
 
 
@@ -57,5 +58,10 @@ class BankAccount(Base):
 
     user: Mapped["User"] = relationship(
         back_populates="bank_accounts",
+        cascade="all, delete-orphan",
+    )
+
+    transactions: Mapped[list["BankTransaction"]] = relationship(
+        back_populates="bank_account",
         cascade="all, delete-orphan",
     )
