@@ -34,7 +34,7 @@ class BankTransaction(Base):
         nullable=False,
     )
     bank_account_id: Mapped[int] = mapped_column(
-        ForeignKey("bank_accounts.id"),
+        ForeignKey("bank_accounts.id", ondelete="CASCADE"),
         nullable=False,
     )
     transaction_timestamp: Mapped[datetime] = mapped_column(
@@ -45,7 +45,7 @@ class BankTransaction(Base):
         nullable=False,
     )
     category_id: Mapped[int] = mapped_column(
-        ForeignKey("bank_categories.id"),
+        ForeignKey("bank_categories.id", ondelete="CASCADE"),
         nullable=False,
     )
 

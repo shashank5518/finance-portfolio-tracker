@@ -26,7 +26,7 @@ class BankAccount(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(
-        ForeignKey("users.id"),
+        ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
     )
     bank_name: Mapped[str] = mapped_column(
@@ -58,7 +58,6 @@ class BankAccount(Base):
 
     user: Mapped["User"] = relationship(
         back_populates="bank_accounts",
-        cascade="all, delete-orphan",
     )
 
     transactions: Mapped[list["BankTransaction"]] = relationship(

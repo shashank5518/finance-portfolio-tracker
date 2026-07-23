@@ -8,6 +8,7 @@ from config.base import Base
 
 if TYPE_CHECKING:
     from models.bank_account import BankAccount
+    from models.demat_account import DematAccount
 
 
 class User(Base):
@@ -23,7 +24,11 @@ class User(Base):
         nullable=False,
     )
 
-    bank_account: Mapped[list["BankAccount"]] = relationship(
+    bank_accounts: Mapped[list["BankAccount"]] = relationship(
         back_populates="user",
         cascade="all, delete-orphan",
+    )
+
+    demat_accounts: Mapped[list["DematAccount"]] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
     )
