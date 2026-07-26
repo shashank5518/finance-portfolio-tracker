@@ -1,118 +1,93 @@
 import logging
+
+# from typing import Any
+from collections.abc import Sequence
 from decimal import Decimal
-from typing import Any
 
-from psycopg2.extensions import connection
+from sqlalchemy import exists, select
+from sqlalchemy.orm import Session
 
-from config.database_connection import get_cursor
-from models.demat_portfolio import Portfolio, PortfolioCreate
+# from psycopg2.extensions import connection
+# from config.database_connection import get_cursor
+from models.demat_holding import DematHolding
 
 logger = logging.getLogger(__name__)
 
 
-class DematPortfolioRepository:
+class DematHoldingRepository:
 
-    def find_by_id(
-        self, portfolio_id: int, conn: connection | None = None
-    ) -> Portfolio | None:
-        with get_cursor(conn) as cur:
-            cur.execute("SELECT * FROM dematportfolio WHERE id = %s", (portfolio_id,))
-            row = cur.fetchone()
-        if not row:
-            logger.debug("Portfolio with id = %d not found", portfolio_id)
-            return None
-        return self._to_demat_portfolio(row)
+    def __init__(self, session: Session) -> None:
+        self.session = session
 
-    def find_all_by_account(
-        self, demat_id: int, conn: connection | None = None
-    ) -> list[Portfolio]:
-        with get_cursor(conn) as cur:
-            cur.execute(
-                "SELECT * FROM dematportfolio WHERE demat_account_id = %s ORDER BY quantity DESC",
-                (demat_id,),
-            )
-            rows = cur.fetchall()
-        return [self._to_demat_portfolio(row) for row in rows]
+    def find_by_id(self, holding_id: int) -> DematHolding | None:
+        return self.session.get(DematHolding, holding_id)
+
+    def find_all_by_account(self, demat_id: int) -> Sequence[DematHolding]:
+        stmt = select(DematHolding).where(DematHolding.demat_account_id == demat_id)
+        holdings = self.session.execute(stmt).scalars().all()
+        if not holdings:
+            logger.debug("No holdings for demat account id: %d were found", demat_id)
+        return holdings
 
     def find_by_account_and_ticker(
-        self, demat_id: int, ticker: str, conn: connection | None = None
-    ) -> Portfolio | None:
-        with get_cursor(conn) as cur:
-            cur.execute(
-                "SELECT * FROM dematportfolio WHERE demat_account_id = %s AND ticker = %s",
-                (demat_id, ticker),
-            )
-            row = cur.fetchone()
-        if not row:
+        self, demat_id: int, ticker: str
+    ) -> DematHolding | None:
+        stmt = select(DematHolding).where(
+            DematHolding.demat_account_id == demat_id, DematHolding.ticker == ticker
+        )
+        holding = self.session.execute(stmt).scalar_one_or_none()
+        if holding is None:
             logger.debug(
-                "No portfolio found with demat id = %d and ticker = %s",
+                "No holdings for demat id: %d and ticker: %s were found",
                 demat_id,
                 ticker,
             )
-            return None
-        return self._to_demat_portfolio(row)
+        return holding
 
-    def exists_by_account_and_ticker(
-        self, demat_id: int, ticker: str, conn: connection | None = None
-    ) -> bool:
-        with get_cursor(conn) as cur:
-            cur.execute(
-                "SELECT 1 FROM dematportfolio WHERE demat_account_id = %s AND ticker = %s",
-                (demat_id, ticker),
+    def exists_by_account_and_ticker(self, demat_id: int, ticker: str) -> bool | None:
+        stmt = select(
+            exists().where(
+                DematHolding.demat_account_id == demat_id, DematHolding.ticker == ticker
             )
-            return cur.fetchone() is not None
+        )
+        return self.session.scalar(stmt)
 
-    def create(
-        self, portfolio_data: PortfolioCreate, conn: connection | None = None
-    ) -> Portfolio:
-        with get_cursor(conn) as cur:
-            cur.execute(
-                "INSERT INTO dematportfolio (demat_account_id, ticker, asset_name, asset_type, quantity, average_buy_price) VALUES(%s, %s, %s, %s, %s, %s) RETURNING *",
-                (
-                    portfolio_data.demat_account_id,
-                    portfolio_data.ticker,
-                    portfolio_data.asset_name,
-                    portfolio_data.asset_type,
-                    portfolio_data.quantity,
-                    portfolio_data.average_buy_price,
-                ),
-            )
-            row = cur.fetchone()
-        portfolio = self._to_demat_portfolio(row)
-        logger.info("Portfolio created : demat_id = %d", portfolio.demat_account_id)
-        return portfolio
+    def create(self, holding_data: DematHolding) -> DematHolding:
+        self.session.add(holding_data)
+        self.session.flush()
+        logger.info(
+            "Holding with id: %d and ticker: %s was inserted",
+            holding_data.id,
+            holding_data.ticker,
+        )
+        return holding_data
 
     def update_position(
         self,
-        portfolio_id: int,
+        holding_id: int,
         quantity: Decimal,
         average_price: Decimal,
-        conn: connection | None = None,
-    ) -> Portfolio | None:
-        with get_cursor(conn) as cur:
-            cur.execute(
-                "UPDATE dematportfolio SET quantity = %s, average_buy_price = %s WHERE id = %s RETURNING *",
-                (quantity, average_price, portfolio_id),
-            )
-            row = cur.fetchone()
-        if not row:
-            logger.debug("Portfolio id = %d not updated", portfolio_id)
+    ) -> DematHolding | None:
+        holding = self.session.get(DematHolding, holding_id)
+        if holding is None:
+            logger.debug("No holding with id: %d was found", holding_id)
             return None
-        logger.info("Updated portfolio with id = %d", portfolio_id)
-        return self._to_demat_portfolio(row)
+        holding.quantity = quantity
+        holding.average_buy_price = average_price
+        self.session.flush()
+        logger.info(
+            "Holding was updated to quantity: %s and average buy price: %s",
+            quantity,
+            average_price,
+        )
+        return holding
 
-    def delete(self, portfolio_id: int, conn: connection | None = None) -> bool:
-        with get_cursor(conn) as cur:
-            cur.execute(
-                "DELETE FROM dematportfolio WHERE id = %s RETURNING *", (portfolio_id,)
-            )
-            deleted = cur.rowcount > 0
-        if not deleted:
-            logger.debug("Portfolio with id = %d not deleted", portfolio_id)
-        else:
-            logger.info("Portfolio id = %d was deleted", portfolio_id)
-        return deleted
-
-    @staticmethod
-    def _to_demat_portfolio(row: dict[str, Any]) -> Portfolio:
-        return Portfolio(**row)
+    def delete(self, holding_id: int) -> bool:
+        holding = self.session.get(DematHolding, holding_id)
+        if holding is None:
+            logger.debug("No holding with id: %d was found", holding_id)
+            return False
+        self.session.delete(holding)
+        self.session.flush()
+        logger.info("Holding with id: %d was deleted", holding_id)
+        return True

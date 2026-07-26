@@ -1,117 +1,91 @@
 import logging
+from collections.abc import Sequence
 from decimal import Decimal
-from typing import Any
 
-from psycopg2.extensions import connection
+# from typing import Any
+from sqlalchemy import exists, select
+from sqlalchemy.orm import Session
 
-from config.database_connection import get_cursor
-from models.demat_transaction import InvestmentTransaction, InvestmentTransactionCreate
+# from psycopg2.extensions import connection
+# from config.database_connection import get_cursor
+from models.demat_transaction import DematTransaction
 
 logger = logging.getLogger(__name__)
 
 
 class DematTransactionRepository:
 
-    def find_by_id(
-        self, transaction_id: int, conn: connection | None = None
-    ) -> InvestmentTransaction | None:
-        with get_cursor(conn) as cur:
-            cur.execute(
-                "SELECT * FROM demattransaction WHERE id = %s", (transaction_id,)
-            )
-            row = cur.fetchone()
-        if not row:
-            logger.debug("Transaction id = %d not found", transaction_id)
-            return None
-        return self._to_demat_transaction(row)
+    def __init__(self, session: Session) -> None:
+        self.session = session
 
-    def find_all_by_portfolio(
-        self, portfolio_id: int, conn: connection | None = None
-    ) -> list[InvestmentTransaction]:
-        with get_cursor(conn) as cur:
-            cur.execute(
-                "SELECT * FROM demattransaction WHERE portfolio_id = %s ORDER BY transaction_time DESC",
-                (portfolio_id,),
-            )
-            rows = cur.fetchall()
-        return [self._to_demat_transaction(row) for row in rows]
+    def find_by_id(self, transaction_id: int) -> DematTransaction | None:
+        return self.session.get(DematTransaction, transaction_id)
+
+    def find_all_by_holding(self, holding_id: int) -> Sequence[DematTransaction]:
+        stmt = select(DematTransaction).where(DematTransaction.holding_id == holding_id)
+        transactions = self.session.execute(stmt).scalars().all()
+        if not transactions:
+            logger.debug("No transactions found for holding: %d", holding_id)
+        return transactions
 
     def find_by_transaction_type(
-        self, transaction_type: str, conn: connection | None = None
-    ) -> list[InvestmentTransaction]:
-        with get_cursor(conn) as cur:
-            cur.execute(
-                "SELECT * FROM demattransaction WHERE transaction_type = %s",
-                (transaction_type,),
-            )
-            rows = cur.fetchall()
-        return [self._to_demat_transaction(row) for row in rows]
+        self, transaction_type: str
+    ) -> Sequence[DematTransaction]:
+        stmt = select(DematTransaction).where(
+            DematTransaction.transaction_type == transaction_type
+        )
+        transactions = self.session.execute(stmt).scalars().all()
+        if not transactions:
+            logger.debug("No transactions with type %s were found", transaction_type)
+        return transactions
 
-    def find_recent_transactions(
-        self, limit: int = 5, conn: connection | None = None
-    ) -> list[InvestmentTransaction]:
-        with get_cursor(conn) as cur:
-            cur.execute(
-                "SELECT * FROM demattransaction ORDER BY transaction_time DESC LIMIT %s",
-                (limit,),
-            )
-            rows = cur.fetchall()
-        return [self._to_demat_transaction(row) for row in rows]
+    def find_recent_transactions(self, limit: int = 5) -> Sequence[DematTransaction]:
+        stmt = (
+            select(DematTransaction)
+            .order_by(DematTransaction.transaction_time.desc())
+            .limit(limit)
+        )
+        transactions = self.session.execute(stmt).scalars().all()
+        if not transactions:
+            logger.debug("No recent transactions found")
+        return transactions
 
-    def exists_by_id(self, transaction_id: int, conn: connection | None = None) -> bool:
-        with get_cursor(conn) as cur:
-            cur.execute(
-                "SELECT 1 FROM demattransaction WHERE id = %s", (transaction_id,)
-            )
-            return cur.fetchone() is not None
+    def exists_by_id(self, transaction_id: int) -> bool | None:
+        stmt = select(exists().where(DematTransaction.id == transaction_id))
+        return self.session.scalar(stmt)
 
-    def create(
-        self, transaction: InvestmentTransactionCreate, conn: connection | None = None
-    ) -> InvestmentTransaction:
-        with get_cursor(conn) as cur:
-            cur.execute(
-                "INSERT INTO demattransaction (portfolio_id, transaction_type, quantity, price_per_unit, brokerage) VALUES (%s, %s, %s, %s, %s) RETURNING *",
-                (
-                    transaction.portfolio_id,
-                    transaction.transaction_type,
-                    transaction.quantity,
-                    transaction.price_per_unit,
-                    transaction.brokerage,
-                ),
-            )
-            row = cur.fetchone()
-        transaction_data = self._to_demat_transaction(row)
-        logger.info("Transaction created, id = %d", transaction_data.id)
-        return transaction_data
+    def create(self, transaction: DematTransaction) -> DematTransaction:
+        self.session.add(transaction)
+        self.session.flush()
+        logger.info(
+            "Transaction with id: %d, holding: %d was created",
+            transaction.id,
+            transaction.holding_id,
+        )
+        return transaction
 
     def update_brokerage(
-        self, transaction_id: int, brokerage: Decimal, conn: connection | None = None
-    ) -> InvestmentTransaction | None:
-        with get_cursor(conn) as cur:
-            cur.execute(
-                "UPDATE demattransaction SET brokerage = %s WHERE id = %s RETURNING *",
-                (brokerage, transaction_id),
-            )
-            row = cur.fetchone()
-        if not row:
-            logger.debug("Update failed for id = %d", transaction_id)
+        self, transaction_id: int, brokerage: Decimal
+    ) -> DematTransaction | None:
+        transaction = self.session.get(DematTransaction, transaction_id)
+        if transaction is None:
+            logger.debug("No transaction with id: %d was found", transaction_id)
             return None
-        logger.info("Brokerage updated")
-        return self._to_demat_transaction(row)
+        transaction.brokerage = brokerage
+        self.session.flush()
+        logger.info(
+            "Brokerage was updated to %s for transaction id: %d",
+            brokerage,
+            transaction_id,
+        )
+        return transaction
 
-    def delete(self, transaction_id: int, conn: connection | None = None) -> bool:
-        with get_cursor(conn) as cur:
-            cur.execute(
-                "DELETE FROM demattransaction WHERE id = %s RETURNING *",
-                (transaction_id,),
-            )
-            deleted = cur.rowcount > 0
-        if not deleted:
-            logger.debug("Delete failed for id = %d", transaction_id)
-        else:
-            logger.info("Deleted transaction for id = %d", transaction_id)
-        return deleted
-
-    @staticmethod
-    def _to_demat_transaction(row: dict[str, Any]) -> InvestmentTransaction:
-        return InvestmentTransaction(**row)
+    def delete(self, transaction_id: int) -> bool:
+        transaction = self.session.get(DematTransaction, transaction_id)
+        if transaction is None:
+            logger.debug("No transactions with id: %d were found", transaction_id)
+            return False
+        self.session.delete(transaction)
+        self.session.flush()
+        logger.info("Transaction with id: %d was deleted", transaction_id)
+        return True
