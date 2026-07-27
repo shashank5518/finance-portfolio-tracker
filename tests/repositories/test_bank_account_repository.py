@@ -109,6 +109,9 @@ def test_update_balance(account_repo, sample_bank_account: BankAccount):
     sample_bank_account.balance = Decimal("20000.00")
     updated_balance = account_repo.update_balance(sample_bank_account.id, sample_bank_account.balance)
     assert updated_balance.balance == Decimal("20000.00")
+    saved = account_repo.find_by_id(sample_bank_account.id)
+    assert saved is not None
+    assert saved.balance == Decimal("20000.00")
 
 def test_update_account_name(account_repo, sample_bank_account):
     sample_bank_account.account_name = "Secondary Savings"
@@ -118,7 +121,8 @@ def test_update_account_name(account_repo, sample_bank_account):
 def test_delete_account(account_repo, sample_bank_account):
     account = account_repo.find_by_id(sample_bank_account.id)
     assert account_repo.delete_account(account.id) is True
-
+    assert account_repo.find_by_id(account.id) is None
+    
 def test_delete_account_returns_false_when_invalid_account(account_repo, sample_user):
     account = BankAccount(
                 id = 9999,
