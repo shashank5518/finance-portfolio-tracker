@@ -51,4 +51,6 @@ class BankTransaction(Base):
 
     bank_account: Mapped["BankAccount"] = relationship(back_populates="transactions")
 
-    category: Mapped["BankCategory | None"] = relationship(back_populates="transactions")
+    category: Mapped["BankCategory | None"] = relationship(
+        back_populates="transactions"
+    )
