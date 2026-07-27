@@ -1,4 +1,4 @@
-class PortfolioNotFoundError(Exception):
+class HoldingNotFoundError(Exception):
     pass
 
 

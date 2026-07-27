@@ -42,10 +42,9 @@ class BankAccountRepository:
         return bank_account
 
     def update_balance(
-        self, account_number: str, new_balance: Decimal
+        self, account_id: int, new_balance: Decimal
     ) -> BankAccount | None:
-        stmt = select(BankAccount).where(BankAccount.account_number == account_number)
-        account = self.session.execute(stmt).scalar_one_or_none()
+        account = self.session.get(BankAccount, account_id)
         if account is None:
             logger.debug("Account number : %s does not exist", account_number)
             return None
