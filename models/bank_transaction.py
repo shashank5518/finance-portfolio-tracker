@@ -44,11 +44,11 @@ class BankTransaction(Base):
         SQLEnum(TransactionType),
         nullable=False,
     )
-    category_id: Mapped[int] = mapped_column(
-        ForeignKey("bank_categories.id", ondelete="CASCADE"),
-        nullable=False,
+    category_id: Mapped[int | None] = mapped_column(
+        ForeignKey("bank_categories.id", ondelete="SET NULL"),
+        nullable=True,
     )
 
     bank_account: Mapped["BankAccount"] = relationship(back_populates="transactions")
 
-    category: Mapped["BankCategory"] = relationship(back_populates="transactions")
+    category: Mapped["BankCategory | None"] = relationship(back_populates="transactions")

@@ -7,7 +7,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from config.base import Base
 
 if TYPE_CHECKING:
-    from finance_portfolio_tracker.models.demat_holding import DematHolding
+    from models.demat_holding import DematHolding
     from models.user import User
 
 

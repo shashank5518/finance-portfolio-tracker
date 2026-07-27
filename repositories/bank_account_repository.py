@@ -46,11 +46,11 @@ class BankAccountRepository:
     ) -> BankAccount | None:
         account = self.session.get(BankAccount, account_id)
         if account is None:
-            logger.debug("Account number : %s does not exist", account_number)
+            logger.debug("Account number : %s does not exist", account_id)
             return None
         account.balance = new_balance
         self.session.flush()
-        logger.info("Balance was updated for account : %s", account_number)
+        logger.info("Balance was updated for account : %s", account_id)
         return account
 
     def update_account_name(self, account_id: int, new_name: str) -> BankAccount | None:
