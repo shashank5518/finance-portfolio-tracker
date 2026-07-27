@@ -55,7 +55,6 @@ class UserRepository:
         if user is None:
             logger.debug(f"Deletion of {user_id} failed")
             return False
-
         self.session.delete(user)
         self.session.flush()
         logger.info(f"Deleted user: {user_id}")
