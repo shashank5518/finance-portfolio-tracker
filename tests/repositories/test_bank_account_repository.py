@@ -104,3 +104,29 @@ def test_find_all_by_user_id(account_repo, sample_user, user_repo):
 def test_find_all_by_user_id_returns_empty_list_for_invalid_user(account_repo):
     accounts = account_repo.find_all_by_user(909090)
     assert accounts == []
+
+def test_update_balance(account_repo, sample_bank_account: BankAccount):
+    sample_bank_account.balance = Decimal("20000.00")
+    updated_balance = account_repo.update_balance(sample_bank_account.id, sample_bank_account.balance)
+    assert updated_balance.balance == Decimal("20000.00")
+
+def test_update_account_name(account_repo, sample_bank_account):
+    sample_bank_account.account_name = "Secondary Savings"
+    updated_account = account_repo.update_account_name(sample_bank_account.id, sample_bank_account.account_name)
+    assert updated_account.account_name == "Secondary Savings"
+    
+def test_delete_account(account_repo, sample_bank_account):
+    account = account_repo.find_by_id(sample_bank_account.id)
+    assert account_repo.delete_account(account.id) is True
+
+def test_delete_account_returns_false_when_invalid_account(account_repo, sample_user):
+    account = BankAccount(
+                id = 9999,
+                user_id=sample_user.id,
+                bank_name="HDFC Bank",
+                account_name="Primary Savings",
+                account_number="123456789012",
+                balance=Decimal("10000.00"),
+                currency=Currency.INR,
+            )
+    assert account_repo.delete_account(account.id) is False
