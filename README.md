@@ -1,46 +1,41 @@
-# Investment Portfolio Management System
+# Financial Tracker
 
-A Python backend project built using **psycopg2** and **PostgreSQL** to simulate a simple banking and investment portfolio management system.
+A modular backend application for managing personal finances and stock investments, built with **Python**, **PostgreSQL**, and **SQLAlchemy 2.0 ORM**.
 
-The primary objective of this project is to practice writing production-style database code without relying on an ORM. The project follows a layered architecture using the Repository Pattern and Service Layer while demonstrating clean code practices, connection pooling, transactions, and business logic.
+The project follows a layered architecture using the **Repository Pattern** and **Service Layer**, providing a clean separation between database access and business logic.
 
 ---
 
 ## Features
 
 ### User Management
-
-- Create users
-- Update user information
-- Delete users
-- Retrieve users
+- Create, update and delete users
+- Retrieve users by ID
+- Retrieve all users
+- Prevent duplicate email registration
 
 ### Bank Accounts
-
-- Multiple bank accounts per user
-- Unique account numbers
+- Create multiple bank accounts per user
 - Update account names
-- Track balances
+- Delete accounts
+- View all accounts belonging to a user
 
 ### Bank Transactions
-
 - Credit and debit transactions
-- Transaction categories
-- Balance validation
-- Prevent overdrafts
+- Automatic balance updates
+- Insufficient balance validation
+- Transaction history
 
 ### Demat Accounts
+- Create and manage brokerage accounts
+- Prevent duplicate broker account IDs
+- Retrieve accounts by user
 
-- Multiple brokerage accounts per user
-- Unique broker account IDs
-- Update account nicknames
-
-### Investment Portfolio
-
-- Holdings for each stock
-- Average buy price calculation
-- Buy transactions
-- Sell transactions
+### Stock Portfolio
+- Buy shares
+- Sell shares
+- Automatic portfolio quantity updates
+- Weighted Average Buy Price calculation
 - Prevent selling more shares than owned
 
 ---
@@ -49,24 +44,20 @@ The primary objective of this project is to practice writing production-style da
 
 - Python 3.13
 - PostgreSQL
-- psycopg2
-- python-dotenv
-- pytest
-- Ruff
-- Black
-- MyPy
+- SQLAlchemy 2.0 ORM
+- Python Type Hints
+- Decimal for financial calculations
 
 ---
 
 # Project Structure
 
-```text
-project/
+```
+financial_tracker/
 │
 ├── config/
-│   └── database_connection.py
-│
-├── exceptions/
+│   ├── database.py
+│   └── settings.py
 │
 ├── models/
 │
@@ -74,256 +65,161 @@ project/
 │
 ├── services/
 │
-├── tests/
+├── exceptions/
 │
-├── requirements.txt
+├── schema/
 │
-└── README.md
+└── main.py
 ```
 
 ---
 
 # Architecture
 
-The project follows a layered architecture.
-
-```text
-Application
-      │
-      ▼
-Services
-      │
-      ▼
-Repositories
-      │
-      ▼
-PostgreSQL
+```
+                Application
+                     │
+                     ▼
+             Service Layer
+      (Business Rules & Validation)
+                     │
+                     ▼
+           Repository Layer
+      (Database Access Only)
+                     │
+                     ▼
+           SQLAlchemy 2.0 ORM
+                     │
+                     ▼
+               PostgreSQL
 ```
 
-## Repository Layer
+---
 
-Responsible only for database operations.
+# Design Principles
 
-- CRUD
-- SQL queries
-- Mapping database rows to models
-
-Repositories contain **no business logic**.
+- Repository Pattern
+- Service Layer Pattern
+- Separation of Concerns
+- Dependency Injection
+- SQLAlchemy Unit of Work
+- Transaction Management
+- Domain-specific Exceptions
 
 ---
 
-## Service Layer
+# Business Rules
 
-Responsible for business rules.
+### Users
+- Email addresses must be unique.
 
-Examples:
+### Bank Accounts
+- User must exist before creating an account.
+- Account balance is modified only through transactions.
 
-- User validation
-- Account existence checks
-- Prevent overdrafts
-- Prevent selling more shares than owned
-- Calculate weighted average buy price
-- Coordinate multiple repositories
+### Bank Transactions
+- Amount must be greater than zero.
+- Debit transactions cannot exceed the available balance.
+- Credit transactions automatically increase the account balance.
+
+### Demat Accounts
+- User must exist before creating a Demat account.
+- Broker account IDs must be unique.
+
+### Demat Transactions
+- Quantity must be greater than zero.
+- Price per share must be greater than zero.
+- Sell transactions cannot exceed available holdings.
+- Buying shares recalculates the weighted average buy price.
+- Selling all shares resets the average buy price to zero.
 
 ---
 
-# Database Concepts Demonstrated
+# SQLAlchemy Concepts Practiced
 
-- PostgreSQL
-- Foreign Keys
-- Unique Constraints
-- CHECK Constraints
-- Transactions
-- Connection Pooling
-- RealDictCursor
-- Context Managers
-- Parameterized Queries
+- Declarative Mapping
+- SQLAlchemy 2.0 Typed ORM
+- Relationships
+- Session Management
+- Unit of Work Pattern
+- CRUD Operations
+- Transactions and Rollbacks
+- ORM State Tracking
 - Repository Pattern
 - Service Layer
+- Type-safe Models
 - Custom Exceptions
-- Type Hinting
 
 ---
 
-# Example Business Logic
-
-## Buying Shares
-
-When additional shares are purchased, the portfolio recalculates the weighted average purchase price.
+# Database Relationships
 
 ```
-New Average Price =
-(
-Old Quantity × Old Average Price
-+
-Purchased Quantity × Purchase Price
-)
-/
-New Quantity
+User
+├── BankAccount
+│     └── BankTransaction
+│
+└── DematAccount
+      └── DematHolding
+            └── DematTransaction
 ```
-
----
-
-## Selling Shares
-
-The service validates:
-
-- Portfolio exists
-- Enough shares are available
-
-If all shares are sold:
-
-```
-Quantity = 0
-Average Buy Price = 0
-```
-
----
-
-# Connection Pool
-
-The application uses `psycopg2.pool.SimpleConnectionPool`.
-
-Benefits:
-
-- Reuses database connections
-- Improves performance
-- Demonstrates production-style connection management
 
 ---
 
 # Error Handling
 
-Custom exceptions are used throughout the service layer.
+Custom domain exceptions are used throughout the application.
 
-Examples:
+Examples include:
 
 - UserNotFoundError
-- PortfolioNotFoundError
-- InvalidTransactionTypeError
+- DuplicateEmailError
+- AccountNotFoundError
+- DuplicateAccountNumberError
+- CategoryNotFoundError
+- InsufficientFundsError
+- HoldingNotFoundError
 - InsufficientSharesError
-
----
-
-# Testing
-
-Tests are written using **pytest**.
-
-Run all tests:
-
-```bash
-pytest
-```
-
----
-
-# Code Quality
-
-Formatting:
-
-```bash
-black .
-```
-
-Linting:
-
-```bash
-ruff check .
-```
-
-Static Type Checking:
-
-```bash
-mypy .
-```
-
----
-
-# Installation
-
-Clone the repository.
-
-```bash
-git clone https://github.com/yourusername/investment-portfolio-system.git
-
-cd investment-portfolio-system
-```
-
-Create a virtual environment.
-
-```bash
-python -m venv .venv
-```
-
-Activate it.
-
-Windows:
-
-```bash
-.venv\Scripts\activate
-```
-
-Linux/macOS:
-
-```bash
-source .venv/bin/activate
-```
-
-Install dependencies.
-
-```bash
-pip install -r requirements.txt
-```
-
-Create a PostgreSQL database.
-
-Copy:
-
-```
-.env.example
-```
-
-to
-
-```
-.env
-```
-
-Fill in your database credentials.
-
-Run the project.
+- DuplicateBrokerAccountIdError
+- InvalidTransactionTypeError
 
 ---
 
 # Future Improvements
 
-- SQLAlchemy ORM
-- Alembic migrations
+- Alembic database migrations
 - FastAPI REST API
-- JWT Authentication
 - Redis caching
-- Docker
-- CI/CD
-- Async PostgreSQL (asyncpg)
+- JWT Authentication
+- Docker support
+- Automated testing with Pytest
+- CI/CD pipeline
+- Portfolio analytics
+- Profit/Loss calculations
+- Dividend tracking
 
 ---
 
-# Learning Objectives
+# Learning Outcomes
 
-This project was built to strengthen understanding of:
+This project was built to gain practical experience with backend application architecture and SQLAlchemy ORM.
 
-- Raw SQL with psycopg2
-- PostgreSQL
-- Clean Architecture
+Key topics explored include:
+
+- SQLAlchemy 2.0 ORM
+- PostgreSQL integration
+- Layered backend architecture
 - Repository Pattern
 - Service Layer
-- Business Logic
-- Connection Pooling
-- Database Transactions
-- Python Best Practices
+- Database transactions
+- Relationship mapping
+- Business logic implementation
+- Financial data modeling
 
 ---
 
-## License
+# Legacy Note
 
-MIT License
+This project originally used **psycopg2** with raw SQL and the Repository Pattern.
+
+It has since been migrated to **SQLAlchemy 2.0 ORM**. Some legacy `psycopg2` modules may still exist in the repository as part of the migration history but are no longer used by the application.
