@@ -33,3 +33,6 @@ class User(Base):
     demat_accounts: Mapped[list["DematAccount"]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
     )
+
+    budgets = relationship("Budget", back_populates="users")
+    

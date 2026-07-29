@@ -19,3 +19,5 @@ class BankCategory(Base):
     transactions: Mapped[list["BankTransaction"]] = relationship(
         back_populates="category"
     )
+
+    budgets = relationship("Budget", back_populates="category")
