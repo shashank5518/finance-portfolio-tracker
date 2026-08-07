@@ -7,6 +7,7 @@ from config.base import Base
 
 if TYPE_CHECKING:
     from models.bank_transaction import BankTransaction
+    from models.budget import Budget
 
 
 class BankCategory(Base):
@@ -20,4 +21,4 @@ class BankCategory(Base):
         back_populates="category"
     )
 
-    budgets = relationship("Budget", back_populates="category")
+    budgets: Mapped[list["Budget"]] = relationship(back_populates="category")

@@ -9,6 +9,7 @@ from config.base import Base
 if TYPE_CHECKING:
     from models.bank_account import BankAccount
     from models.demat_account import DematAccount
+    from models.budget import Budget
 
 
 class User(Base):
@@ -34,5 +35,5 @@ class User(Base):
         back_populates="user", cascade="all, delete-orphan"
     )
 
-    budgets = relationship("Budget", back_populates="users")
+    budgets: Mapped[list["Budget"]] = relationship(back_populates="user")
     

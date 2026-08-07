@@ -1,6 +1,8 @@
 class DuplicateEmailError(Exception):
     pass
 
+class DuplicatePhoneError(Exception):
+    pass
 
 class UserNotFoundError(Exception):
     pass

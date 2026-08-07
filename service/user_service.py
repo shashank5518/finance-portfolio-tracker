@@ -1,10 +1,8 @@
 from collections.abc import Sequence
 
-from exceptions.user_service_exceptions import (
-    DuplicateEmailError,
-    UserNotFoundError,
-)
+from exceptions.user_service_exceptions import DuplicateEmailError, DuplicatePhoneError, UserNotFoundError
 from repositories.user_repository import User, UserRepository
+from schemas.user import UserCreate
 
 
 class UserService:
@@ -12,10 +10,18 @@ class UserService:
     def __init__(self, user_repo: UserRepository) -> None:
         self.user_repo = user_repo
 
-    def create_user(self, user_data: User) -> User:
+    def create_user(self, user_data: UserCreate) -> User:
         if self.user_repo.exists_by_email(user_data.email):
             raise DuplicateEmailError(f"Email: {user_data.email} already exists")
-        return self.user_repo.create(user_data)
+        if self.user_repo.exists_by_phone(user_data.phone):
+            raise DuplicatePhoneError(f"Phone: {user_data.phone} already exists")
+        user = User(
+            name = user_data.name,
+            email = user_data.email,
+            phone = user_data.phone,
+            password_hash = user_data.password
+        )
+        return self.user_repo.create(user)
 
     def get_user_by_id(self, user_id: int) -> User:
         user = self.user_repo.find_by_id(user_id)

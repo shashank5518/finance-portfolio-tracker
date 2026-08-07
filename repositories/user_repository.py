@@ -31,6 +31,10 @@ class UserRepository:
         stmt = select(exists().where(User.email == email))
         return self.session.scalar(stmt)
 
+    def exists_by_phone(self, phone: str) -> bool | None:
+        stmt = select(exists().where(User.phone == phone))
+        return self.session.scalar(stmt)
+
     def create(self, new_user: User) -> User:
         self.session.add(new_user)
         self.session.flush()

@@ -1,9 +1,14 @@
 from decimal import Decimal
+from typing import TYPE_CHECKING
 
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from config.base import Base
+
+if TYPE_CHECKING:
+    from models.bank_category import BankCategory
+    from models.user import User
 
 
 class Budget(Base):
@@ -13,5 +18,5 @@ class Budget(Base):
     category_id: Mapped[int] = mapped_column(ForeignKey("bank_categories.id"), nullable=False)
     budget_allocated: Mapped[Decimal]
 
-    user = relationship("User", back_populates="financial_budget")
-    category = relationship("BankCategory", back_populates="financial_budget")
+    user: Mapped["User"] = relationship(back_populates="budgets")
+    category: Mapped["BankCategory"] = relationship(back_populates="budgets")

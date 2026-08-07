@@ -70,7 +70,7 @@
 
 import logging
 import os
-from collections.abc import Iterator
+from collections.abc import Generator, Iterator
 from contextlib import contextmanager
 
 from dotenv import load_dotenv
@@ -114,7 +114,7 @@ SessionLocal = sessionmaker(
 )
 
 
-@contextmanager
+@contextmanager # for scripts/tests
 def get_session() -> Iterator[Session]:
     session = SessionLocal()
     try:
@@ -126,3 +126,14 @@ def get_session() -> Iterator[Session]:
         raise
     finally:
         session.close()
+
+def get_db() -> Generator[Session]: # for fastapi
+    db = SessionLocal()
+    try: 
+        yield db
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+    finally: 
+        db.close()
