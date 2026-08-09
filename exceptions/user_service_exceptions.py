@@ -11,6 +11,5 @@ class UserNotFoundError(Exception):
 class UpdateFailedError(Exception):
     pass
 
-
 class DeletionFailedError(Exception):
     pass

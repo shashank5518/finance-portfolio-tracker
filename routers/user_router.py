@@ -17,7 +17,7 @@ def get_users(service: UserService = Depends(get_user_service)):
 def get_user_by_id(user_id: int, service: UserService = Depends(get_user_service)):
     return service.get_user_by_id(user_id)
 
-@router.post("/", response_model=UserResponse, status_code=status.HTTP_201_CREATED, summary = "Create a new user", description = "Creates a new ser after validating email uniqueness.")
+@router.post("/", response_model=UserResponse, status_code=status.HTTP_201_CREATED, summary = "Create a new user", description = "Creates a new user after validating email uniqueness.")
 def create_user(
     user: UserCreate,
     service: UserService = Depends(get_user_service),
@@ -27,3 +27,7 @@ def create_user(
 @router.put("/{user_id}", response_model=UserResponse,)
 def update_user(user_id: int, user: UserUpdate, service: UserService = Depends(get_user_service),):
     return service.update_user(user_id, user)
+
+@router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT,)
+def delete_user(user_id: int, service: UserService = Depends(get_user_service)):
+    service.delete_user(user_id)
