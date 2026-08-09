@@ -31,6 +31,10 @@ class UserRepository:
         stmt = select(exists().where(User.email == email))
         return self.session.scalar(stmt)
 
+    def exists_by_email_for_other_user(self, email: str, user_id: int,) -> bool | None:
+        stmt = select(exists().where(User.email == email, User.id != user_id,))
+        return self.session.scalar(stmt)
+
     def exists_by_phone(self, phone: str) -> bool | None:
         stmt = select(exists().where(User.phone == phone))
         return self.session.scalar(stmt)
@@ -51,6 +55,13 @@ class UserRepository:
         self.session.flush()
 
         logger.info("Updated user %d name to %s", user.id, user.name)
+        return user
+
+    def update(self, user: User) -> User:
+        self.session.flush()
+
+        logger.info("Updated user %d", user.id)
+
         return user
 
     def delete(self, user_id: int) -> bool:

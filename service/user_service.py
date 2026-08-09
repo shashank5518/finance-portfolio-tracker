@@ -2,7 +2,7 @@ from collections.abc import Sequence
 
 from exceptions.user_service_exceptions import DuplicateEmailError, DuplicatePhoneError, UserNotFoundError
 from repositories.user_repository import User, UserRepository
-from schemas.user import UserCreate
+from schemas.user import UserCreate, UserUpdate
 
 
 class UserService:
@@ -32,11 +32,17 @@ class UserService:
     def get_all_users(self) -> Sequence[User]:
         return self.user_repo.find_all()
 
-    def update_user(self, user_id: int, new_name: str) -> User:
-        updated_user = self.user_repo.update_name(user_id, new_name)
-        if updated_user is None:
-            raise UserNotFoundError(f"User: {user_id} not found")
-        return updated_user
+    def update_user(self, user_id: int, user_data: UserUpdate) -> User:
+        user = self.user_repo.find_by_id(user_id)
+        if user is None:
+            raise UserNotFoundError(f"User with id {user_id} not found")
+        if self.user_repo.exists_by_email_for_other_user(user_data.email, user_id,):
+            raise DuplicateEmailError(f"Email: {user_data.email} already exists")
+        user.name = user_data.name
+        user.email = user_data.email
+        user.phone = user_data.phone
+
+        return self.user_repo.update(user)
 
     def delete_user(self, user_id: int) -> None:
         deleted_user = self.user_repo.delete(user_id)
