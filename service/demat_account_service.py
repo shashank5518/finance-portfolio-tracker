@@ -10,7 +10,7 @@ from repositories.demat_account_repository import (
     DematAccountRepository,
 )
 from repositories.user_repository import UserRepository
-
+from schemas.demat_account import DematAccountCreate
 
 class DematAccountService:
     def __init__(
@@ -19,7 +19,7 @@ class DematAccountService:
         self.demat_acc_repo = demat_acc_repo
         self.user_repo = user_repo
 
-    def create_account(self, account_data: DematAccount) -> DematAccount:
+    def create_account(self, account_data: DematAccountCreate) -> DematAccount:
         user = self.user_repo.find_by_id(account_data.user_id)
         if user is None:
             raise UserNotFoundError(f"User '{account_data.user_id}' not found.")
@@ -29,7 +29,13 @@ class DematAccountService:
             raise DuplicateBrokerAccountIdError(
                 f"Broker account '{account_data.broker_account_id}' already exists."
             )
-        return self.demat_acc_repo.create(account_data)
+        demat_account = DematAccount(
+            user_id = account_data.user_id,
+            broker_name = account_data.broker_name,
+            account_name = account_data.account_name,
+            broker_account_id = account_data.broker_account_id
+        )
+        return self.demat_acc_repo.create(demat_account)
 
     def get_account_by_id(self, account_id: int) -> DematAccount:
         account = self.demat_acc_repo.find_by_id(account_id)
