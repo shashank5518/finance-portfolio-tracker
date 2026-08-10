@@ -5,5 +5,7 @@ from config.database_connection import get_db
 from repositories.bank_category_repository import BankCategoryRepository
 
 
-def get_bank_category_repository(db: Session = Depends(get_db)) -> BankCategoryRepository:
+def get_bank_category_repository(
+    db: Session = Depends(get_db),
+) -> BankCategoryRepository:
     return BankCategoryRepository(db)

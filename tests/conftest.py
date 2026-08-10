@@ -25,9 +25,12 @@ from service.demat_account_service import DematAccountService
 from service.demat_transaction_service import DematTransactionService
 from service.user_service import UserService
 
-TEST_DATABASE_URL = ("postgresql+psycopg2://postgres:root@localhost/finance_portfolio_test")
+TEST_DATABASE_URL = (
+    "postgresql+psycopg2://postgres:root@localhost/finance_portfolio_test"
+)
 
-@pytest.fixture(scope = "session")
+
+@pytest.fixture(scope="session")
 def engine():
     engine = create_engine(TEST_DATABASE_URL)
 
@@ -37,12 +40,14 @@ def engine():
 
     Base.metadata.drop_all(engine)
 
-@pytest.fixture(scope = "session")
+
+@pytest.fixture(scope="session")
 def session_factory(engine):
     return sessionmaker(
-        bind = engine, 
+        bind=engine,
         expire_on_commit=False,
     )
+
 
 @pytest.fixture
 def db_session(session_factory):
@@ -53,53 +58,69 @@ def db_session(session_factory):
         session.rollback()
         session.close()
 
+
 @pytest.fixture
 def user_repo(db_session):
     return UserRepository(db_session)
+
 
 @pytest.fixture
 def account_repo(db_session):
     return BankAccountRepository(db_session)
 
+
 @pytest.fixture
 def category_repo(db_session):
     return BankCategoryRepository(db_session)
+
 
 @pytest.fixture
 def transaction_repo(db_session):
     return BankTransactionRepository(db_session)
 
+
 @pytest.fixture
 def demat_account_repo(db_session):
     return DematAccountRepository(db_session)
+
 
 @pytest.fixture
 def demat_holding_repo(db_session):
     return DematHoldingRepository(db_session)
 
+
 @pytest.fixture
 def demat_transaction_repo(db_session):
     return DematTransactionRepository(db_session)
+
 
 @pytest.fixture
 def user_service(user_repo):
     return UserService(user_repo)
 
+
 @pytest.fixture
 def bank_account_service(user_repo, account_repo):
-    return BankAccountService(account_repo, user_repo,)
+    return BankAccountService(
+        account_repo,
+        user_repo,
+    )
+
 
 @pytest.fixture
 def bank_transaction_service(account_repo, transaction_repo, category_repo):
     return BankTransactionService(account_repo, transaction_repo, category_repo)
 
+
 @pytest.fixture
 def demat_account_service(demat_account_repo, user_repo):
     return DematAccountService(demat_account_repo, user_repo)
 
+
 @pytest.fixture
 def demat_transaction_service(demat_transaction_repo, demat_holding_repo):
     return DematTransactionService(demat_transaction_repo, demat_holding_repo)
+
 
 @pytest.fixture
 def sample_user(user_repo):
@@ -110,6 +131,7 @@ def sample_user(user_repo):
             password_hash="hashed_password",
         )
     )
+
 
 @pytest.fixture
 def sample_bank_account(account_repo, sample_user):
@@ -124,6 +146,7 @@ def sample_bank_account(account_repo, sample_user):
         )
     )
 
+
 @pytest.fixture
 def sample_category(category_repo):
     return category_repo.create(
@@ -132,6 +155,7 @@ def sample_category(category_repo):
             description="Monthly salary credit",
         )
     )
+
 
 @pytest.fixture
 def sample_bank_transaction(
@@ -149,6 +173,7 @@ def sample_bank_transaction(
         )
     )
 
+
 @pytest.fixture
 def sample_demat_account(
     demat_account_repo,
@@ -162,6 +187,7 @@ def sample_demat_account(
             broker_account_id="ZDH001",
         )
     )
+
 
 @pytest.fixture
 def sample_holding(
@@ -178,6 +204,7 @@ def sample_holding(
             average_buy_price=Decimal("3500.00"),
         )
     )
+
 
 @pytest.fixture
 def sample_demat_transaction(

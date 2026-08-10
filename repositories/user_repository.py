@@ -31,8 +31,17 @@ class UserRepository:
         stmt = select(exists().where(User.email == email))
         return self.session.scalar(stmt)
 
-    def exists_by_email_for_other_user(self, email: str, user_id: int,) -> bool | None:
-        stmt = select(exists().where(User.email == email, User.id != user_id,))
+    def exists_by_email_for_other_user(
+        self,
+        email: str,
+        user_id: int,
+    ) -> bool | None:
+        stmt = select(
+            exists().where(
+                User.email == email,
+                User.id != user_id,
+            )
+        )
         return self.session.scalar(stmt)
 
     def exists_by_phone(self, phone: str) -> bool | None:

@@ -15,7 +15,9 @@ class Budget(Base):
     __tablename__ = "financial_budget"
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
-    category_id: Mapped[int] = mapped_column(ForeignKey("bank_categories.id"), nullable=False)
+    category_id: Mapped[int] = mapped_column(
+        ForeignKey("bank_categories.id"), nullable=False
+    )
     budget_allocated: Mapped[Decimal]
 
     user: Mapped["User"] = relationship(back_populates="budgets")

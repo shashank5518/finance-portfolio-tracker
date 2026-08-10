@@ -22,6 +22,7 @@ def test_create_user(user_repo):
     assert saved_user.password_hash == "hashed_password"
     assert created_user.created_at is not None
 
+
 def test_find_user_by_id(user_repo, sample_user: User):
     found_user = user_repo.find_by_id(sample_user.id)
     assert found_user is not None
@@ -31,9 +32,11 @@ def test_find_user_by_id(user_repo, sample_user: User):
     assert found_user.password_hash == sample_user.password_hash
     assert found_user.created_at == sample_user.created_at
 
+
 def test_find_user_by_id_returns_none_for_invalid_user(user_repo):
     user = user_repo.find_by_id(99999)
     assert user is None
+
 
 def test_find_user_by_email(user_repo, sample_user):
     found_user = user_repo.find_by_email(sample_user.email)
@@ -44,9 +47,11 @@ def test_find_user_by_email(user_repo, sample_user):
     assert found_user.id == sample_user.id
     assert found_user.created_at == sample_user.created_at
 
+
 def test_find_user_by_email_returns_none_for_invalid_user(user_repo):
     user = user_repo.find_by_email("abc@abc.com")
     assert user is None
+
 
 def test_find_all(user_repo):
     user1 = User(
@@ -59,7 +64,7 @@ def test_find_all(user_repo):
         name="Bob",
         email="bob@example.com",
         password_hash="password2",
-    )   
+    )
 
     user_repo.create(user1)
     user_repo.create(user2)
@@ -72,13 +77,16 @@ def test_find_all(user_repo):
         "bob@example.com",
     }
 
+
 def test_exists_by_email(user_repo, sample_user):
     found_user = user_repo.exists_by_email(sample_user.email)
     assert found_user is True
 
+
 def test_exists_by_email_returns_none_if_invalid_email(user_repo):
     user = user_repo.exists_by_email("abc@abc.com")
     assert user is False
+
 
 def test_update_name(user_repo, sample_user):
     sample_user.name = "Alice Smith"
@@ -87,6 +95,7 @@ def test_update_name(user_repo, sample_user):
     saved_user = user_repo.find_by_id(sample_user.id)
     assert saved_user is not None
     assert saved_user.name == "Alice Smith"
+
 
 def test_update_name_returns_none_if_invalid_user(user_repo):
     user = User(
@@ -98,9 +107,11 @@ def test_update_name_returns_none_if_invalid_user(user_repo):
     updated_user = user_repo.update_name(user.id, user.name)
     assert updated_user is None
 
+
 def test_delete(user_repo, sample_user):
     user = user_repo.find_by_id(sample_user.id)
     assert user_repo.delete(user.id) is True
+
 
 def test_delete_returns_false_for_invalid_user(user_repo):
     user = User(
@@ -110,4 +121,3 @@ def test_delete_returns_false_for_invalid_user(user_repo):
         password_hash="password",
     )
     assert user_repo.delete(user.id) is False
-

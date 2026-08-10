@@ -12,6 +12,7 @@ from repositories.demat_account_repository import (
 from repositories.user_repository import UserRepository
 from schemas.demat_account import DematAccountCreate
 
+
 class DematAccountService:
     def __init__(
         self, demat_acc_repo: DematAccountRepository, user_repo: UserRepository
@@ -30,10 +31,10 @@ class DematAccountService:
                 f"Broker account '{account_data.broker_account_id}' already exists."
             )
         demat_account = DematAccount(
-            user_id = account_data.user_id,
-            broker_name = account_data.broker_name,
-            account_name = account_data.account_name,
-            broker_account_id = account_data.broker_account_id
+            user_id=account_data.user_id,
+            broker_name=account_data.broker_name,
+            account_name=account_data.account_name,
+            broker_account_id=account_data.broker_account_id,
         )
         return self.demat_acc_repo.create(demat_account)
 

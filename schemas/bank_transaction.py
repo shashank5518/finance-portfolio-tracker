@@ -10,9 +10,11 @@ class BankTransactionBase(BaseModel):
     description: str
     transaction_type: TransactionType
 
+
 class BankTransactionCreate(BankTransactionBase):
     bank_account_id: int
     category_id: int
+
 
 class BankTransactionResponse(BankTransactionBase):
     id: int

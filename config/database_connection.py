@@ -114,7 +114,7 @@ SessionLocal = sessionmaker(
 )
 
 
-@contextmanager # for scripts/tests
+@contextmanager  # for scripts/tests
 def get_session() -> Iterator[Session]:
     session = SessionLocal()
     try:
@@ -127,13 +127,14 @@ def get_session() -> Iterator[Session]:
     finally:
         session.close()
 
-def get_db() -> Generator[Session]: # for fastapi
+
+def get_db() -> Generator[Session]:  # for fastapi
     db = SessionLocal()
-    try: 
+    try:
         yield db
         db.commit()
     except Exception:
         db.rollback()
         raise
-    finally: 
+    finally:
         db.close()

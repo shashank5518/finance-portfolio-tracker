@@ -32,12 +32,12 @@ class BankAccountService:
                 f"Account Number '{account_data.account_number}' already exists"
             )
         bank_account = BankAccount(
-            user_id = account_data.user_id,
-            bank_name = account_data.bank_name,
-            account_name = account_data.account_name,
-            account_number = account_data.account_number,
-            balance = account_data.balance,
-            currency = account_data.currency
+            user_id=account_data.user_id,
+            bank_name=account_data.bank_name,
+            account_name=account_data.account_name,
+            account_number=account_data.account_number,
+            balance=account_data.balance,
+            currency=account_data.currency,
         )
         return self.bank_repo.create(bank_account)
 

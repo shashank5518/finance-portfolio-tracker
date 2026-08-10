@@ -28,7 +28,9 @@ class BankTransactionService:
         self.transaction_repo = transaction_repo
         self.category_repo = category_repo
 
-    def create_transaction(self, transaction_data: BankTransactionCreate) -> BankTransaction:
+    def create_transaction(
+        self, transaction_data: BankTransactionCreate
+    ) -> BankTransaction:
         account = self.account_repo.find_by_id(transaction_data.bank_account_id)
         if account is None:
             raise AccountNotFoundError(
@@ -55,11 +57,11 @@ class BankTransactionService:
             )
         account.balance = new_balance
         transaction = BankTransaction(
-            amount = transaction_data.amount,
-            description = transaction_data.description,
-            transaction_type = transaction_data.transaction_type,
-            bank_account_id = transaction_data.bank_account_id,
-            category_id = transaction_data.category_id,
+            amount=transaction_data.amount,
+            description=transaction_data.description,
+            transaction_type=transaction_data.transaction_type,
+            bank_account_id=transaction_data.bank_account_id,
+            category_id=transaction_data.category_id,
         )
         return self.transaction_repo.create(transaction)
 

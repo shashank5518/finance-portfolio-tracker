@@ -10,11 +10,17 @@ from repositories.bank_transaction_repository import BankTransactionRepository
 from service.bank_transaction_service import BankTransactionService
 
 
-def get_bank_transaction_repository(db: Session = Depends(get_db)) -> BankTransactionRepository:
+def get_bank_transaction_repository(
+    db: Session = Depends(get_db),
+) -> BankTransactionRepository:
     return BankTransactionRepository(db)
 
+
 def get_bank_transaction_service(
-        category_repo: BankCategoryRepository = Depends(get_bank_category_repository), 
-        account_repo: BankAccountRepository = Depends(get_bank_account_repository), 
-        transaction_repo: BankTransactionRepository = Depends(get_bank_transaction_repository)):
+    category_repo: BankCategoryRepository = Depends(get_bank_category_repository),
+    account_repo: BankAccountRepository = Depends(get_bank_account_repository),
+    transaction_repo: BankTransactionRepository = Depends(
+        get_bank_transaction_repository
+    ),
+):
     return BankTransactionService(account_repo, transaction_repo, category_repo)

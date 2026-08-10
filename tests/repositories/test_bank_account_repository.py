@@ -8,13 +8,13 @@ from models.user import User
 
 def test_create_account(account_repo, sample_user):
     account = BankAccount(
-                user_id=sample_user.id,
-                bank_name="HDFC Bank",
-                account_name="Primary Savings",
-                account_number="123456789012",
-                balance=Decimal("10000.00"),
-                currency=Currency.INR,
-            )
+        user_id=sample_user.id,
+        bank_name="HDFC Bank",
+        account_name="Primary Savings",
+        account_number="123456789012",
+        balance=Decimal("10000.00"),
+        currency=Currency.INR,
+    )
 
     created_account = account_repo.create(account)
     assert created_account.id is not None
@@ -29,6 +29,7 @@ def test_create_account(account_repo, sample_user):
     assert saved.currency == account.currency
     assert saved.created_at == created_account.created_at
 
+
 def test_find_by_id(account_repo, sample_bank_account: BankAccount):
     found_account = account_repo.find_by_id(sample_bank_account.id)
     assert found_account is not None
@@ -40,8 +41,11 @@ def test_find_by_id(account_repo, sample_bank_account: BankAccount):
     assert found_account.currency == sample_bank_account.currency
     assert found_account.created_at == sample_bank_account.created_at
 
+
 def test_find_by_account_number(account_repo, sample_bank_account: BankAccount):
-    found_account = account_repo.find_by_account_number(sample_bank_account.account_number)
+    found_account = account_repo.find_by_account_number(
+        sample_bank_account.account_number
+    )
     assert found_account is not None
     assert found_account.id == sample_bank_account.id
     assert found_account.bank_name == sample_bank_account.bank_name
@@ -49,25 +53,26 @@ def test_find_by_account_number(account_repo, sample_bank_account: BankAccount):
     assert found_account.account_number == sample_bank_account.account_number
     assert found_account.balance == sample_bank_account.balance
     assert found_account.currency == sample_bank_account.currency
-    assert found_account.created_at == sample_bank_account.created_at   
+    assert found_account.created_at == sample_bank_account.created_at
+
 
 def test_find_all_by_user_id(account_repo, sample_user, user_repo):
     user1 = sample_user
     user2 = User(
-                name="Bob",
-                email="bob@example.com",
-                password_hash="password",
-            )
+        name="Bob",
+        email="bob@example.com",
+        password_hash="password",
+    )
     user2 = user_repo.create(user2)
 
     account1 = BankAccount(
-            user_id=user1.id,
-            bank_name="HDFC",
-            account_name="Savings",
-            account_number="111111",
-            balance=Decimal("1000"),
-            currency=Currency.INR,
-        )
+        user_id=user1.id,
+        bank_name="HDFC",
+        account_name="Savings",
+        account_number="111111",
+        balance=Decimal("1000"),
+        currency=Currency.INR,
+    )
 
     account2 = BankAccount(
         user_id=user1.id,
@@ -101,36 +106,45 @@ def test_find_all_by_user_id(account_repo, sample_user, user_repo):
     account_numbers = {account.account_number for account in accounts}
     assert account_numbers == {"111111", "222222"}
 
+
 def test_find_all_by_user_id_returns_empty_list_for_invalid_user(account_repo):
     accounts = account_repo.find_all_by_user(909090)
     assert accounts == []
 
+
 def test_update_balance(account_repo, sample_bank_account: BankAccount):
     sample_bank_account.balance = Decimal("20000.00")
-    updated_balance = account_repo.update_balance(sample_bank_account.id, sample_bank_account.balance)
+    updated_balance = account_repo.update_balance(
+        sample_bank_account.id, sample_bank_account.balance
+    )
     assert updated_balance.balance == Decimal("20000.00")
     saved = account_repo.find_by_id(sample_bank_account.id)
     assert saved is not None
     assert saved.balance == Decimal("20000.00")
 
+
 def test_update_account_name(account_repo, sample_bank_account):
     sample_bank_account.account_name = "Secondary Savings"
-    updated_account = account_repo.update_account_name(sample_bank_account.id, sample_bank_account.account_name)
+    updated_account = account_repo.update_account_name(
+        sample_bank_account.id, sample_bank_account.account_name
+    )
     assert updated_account.account_name == "Secondary Savings"
-    
+
+
 def test_delete_account(account_repo, sample_bank_account):
     account = account_repo.find_by_id(sample_bank_account.id)
     assert account_repo.delete_account(account.id) is True
     assert account_repo.find_by_id(account.id) is None
-    
+
+
 def test_delete_account_returns_false_when_invalid_account(account_repo, sample_user):
     account = BankAccount(
-                id = 9999,
-                user_id=sample_user.id,
-                bank_name="HDFC Bank",
-                account_name="Primary Savings",
-                account_number="123456789012",
-                balance=Decimal("10000.00"),
-                currency=Currency.INR,
-            )
+        id=9999,
+        user_id=sample_user.id,
+        bank_name="HDFC Bank",
+        account_name="Primary Savings",
+        account_number="123456789012",
+        balance=Decimal("10000.00"),
+        currency=Currency.INR,
+    )
     assert account_repo.delete_account(account.id) is False
