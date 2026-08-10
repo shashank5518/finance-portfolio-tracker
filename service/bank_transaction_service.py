@@ -13,6 +13,7 @@ from repositories.bank_transaction_repository import (
     BankTransaction,
     BankTransactionRepository,
 )
+from schemas.bank_transaction import BankTransactionCreate
 
 
 class BankTransactionService:
@@ -27,7 +28,7 @@ class BankTransactionService:
         self.transaction_repo = transaction_repo
         self.category_repo = category_repo
 
-    def create_transaction(self, transaction_data: BankTransaction) -> BankTransaction:
+    def create_transaction(self, transaction_data: BankTransactionCreate) -> BankTransaction:
         account = self.account_repo.find_by_id(transaction_data.bank_account_id)
         if account is None:
             raise AccountNotFoundError(
@@ -53,7 +54,14 @@ class BankTransactionService:
                 f"Unsupported transaction type: {transaction_data.transaction_type}"
             )
         account.balance = new_balance
-        return self.transaction_repo.create(transaction_data)
+        transaction = BankTransaction(
+            amount = transaction_data.amount,
+            description = transaction_data.description,
+            transaction_type = transaction_data.transaction_type,
+            bank_account_id = transaction_data.bank_account_id,
+            category_id = transaction_data.category_id,
+        )
+        return self.transaction_repo.create(transaction)
 
     def get_transaction_by_id(self, transaction_id: int) -> BankTransaction:
         transaction = self.transaction_repo.find_by_id(transaction_id)
