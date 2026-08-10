@@ -12,10 +12,8 @@ class BankAccountBase(BaseModel):
     balance: Decimal
     currency: Currency
 
-class BankAccountUpdateBase(BaseModel):
-    bank_name: str
+class BankAccountUpdate(BaseModel):
     account_name: str
-    account_number: str
 
 class BankAccountCreate(BankAccountBase):
     user_id: int
@@ -24,5 +22,3 @@ class BankAccountResponse(BankAccountBase):
     id: int
     model_config = ConfigDict(from_attributes=True)
 
-class BankAccountUpdate(BankAccountUpdateBase):
-    pass

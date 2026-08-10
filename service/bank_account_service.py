@@ -12,6 +12,7 @@ from repositories.bank_account_repository import (
     BankAccountRepository,
 )
 from repositories.user_repository import UserRepository
+from schemas.bank_account import BankAccountCreate
 
 
 class BankAccountService:
@@ -22,7 +23,7 @@ class BankAccountService:
         self.user_repo = user_repo
         self.bank_repo = bank_repo
 
-    def create_account(self, account_data: BankAccount) -> BankAccount:
+    def create_account(self, account_data: BankAccountCreate) -> BankAccount:
         user = self.user_repo.find_by_id(account_data.user_id)
         if user is None:
             raise UserNotFoundError(f"User '{account_data.user_id}' not found")
@@ -30,7 +31,15 @@ class BankAccountService:
             raise DuplicateAccountNumberError(
                 f"Account Number '{account_data.account_number}' already exists"
             )
-        return self.bank_repo.create(account_data)
+        bank_account = BankAccount(
+            user_id = account_data.user_id,
+            bank_name = account_data.bank_name,
+            account_name = account_data.account_name,
+            account_number = account_data.account_number,
+            balance = account_data.balance,
+            currency = account_data.currency
+        )
+        return self.bank_repo.create(bank_account)
 
     def get_account_by_id(self, account_id: int) -> BankAccount:
         account = self.bank_repo.find_by_id(account_id)
@@ -44,7 +53,7 @@ class BankAccountService:
             raise UserNotFoundError(f"User '{user_id}' not found")
         return self.bank_repo.find_all_by_user(user_id)
 
-    def update_account_name(self, account_id: int, new_name: str) -> BankAccount:
+    def update_account_name(self, account_id: int, new_name) -> BankAccount:
         updated_account = self.bank_repo.update_account_name(account_id, new_name)
         if updated_account is None:
             raise AccountNotFoundError(f"Account '{account_id}' not found")
