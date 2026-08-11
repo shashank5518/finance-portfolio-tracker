@@ -11,6 +11,7 @@ from repositories.demat_transaction_repository import (
     DematTransaction,
     DematTransactionRepository,
 )
+from schemas.demat_transaction import DematTransactionCreate
 
 
 class DematTransactionService:
@@ -24,7 +25,7 @@ class DematTransactionService:
         self.holding_repo = holding_repo
 
     def create_transaction(
-        self, transaction_data: DematTransaction
+        self, transaction_data: DematTransactionCreate
     ) -> DematTransaction:
         holding = self.holding_repo.find_by_id(transaction_data.holding_id)
         if holding is None:
@@ -58,4 +59,11 @@ class DematTransactionService:
             raise InvalidTransactionTypeError(
                 f"Transaction type '{transaction_data.transaction_type}' is invalid."
             )
-        return self.transaction_repo.create(transaction_data)
+        transaction = DematTransaction(
+            holding_id = transaction_data.holding_id,
+            transaction_type = transaction_data.transaction_type,
+            quantity = transaction_data.quantity,
+            price_per_unit = transaction_data.price_per_unit,
+            brokerage = transaction_data.brokerage
+        )
+        return self.transaction_repo.create(transaction)
