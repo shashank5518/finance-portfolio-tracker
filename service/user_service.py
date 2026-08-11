@@ -7,6 +7,7 @@ from exceptions.user_service_exceptions import (
 )
 from repositories.user_repository import User, UserRepository
 from schemas.user import UserCreate, UserUpdate
+from utils.security import hash_password
 
 
 class UserService:
@@ -23,7 +24,7 @@ class UserService:
             name=user_data.name,
             email=user_data.email,
             phone=user_data.phone,
-            password_hash=user_data.password,
+            password_hash=hash_password(user_data.password),
         )
         return self.user_repo.create(user)
 

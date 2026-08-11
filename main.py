@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
+from exceptions.auth_exceptions import InvalidCredentialsError
 from exceptions.bank_account_exceptions import AccountNotFoundError, DuplicateAccountNumberError
 from exceptions.bank_transaction_exceptions import (
     CategoryNotFoundError,
@@ -133,6 +134,15 @@ async def invalid_transaction_type_handler(
 ):
     return JSONResponse(
         status_code=400,
+        content={"detail": str(exc)},
+    )
+
+@app.exception_handler(InvalidCredentialsError)
+async def invalid_credentials_handler(
+    request: Request, exc: InvalidCredentialsError
+):
+    return JSONResponse(
+        status_code=401,
         content={"detail": str(exc)},
     )
 
