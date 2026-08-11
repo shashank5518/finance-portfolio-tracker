@@ -1,7 +1,7 @@
 from exceptions.auth_exceptions import InvalidCredentialsError
 from repositories.user_repository import UserRepository
 from schemas.auth import TokenResponse
-from utils.security import verify_password
+from utils.security import create_access_token, verify_password
 
 
 class AuthService:

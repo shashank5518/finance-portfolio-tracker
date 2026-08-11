@@ -11,6 +11,7 @@ from exceptions.bank_transaction_exceptions import (
 from exceptions.demat_account_exceptions import DematAccountNotFoundError
 from exceptions.demat_transaction_exceptions import HoldingNotFoundError, InsufficientSharesError, InvalidTransactionTypeError
 from exceptions.user_service_exceptions import DuplicateEmailError, DuplicatePhoneError, UserNotFoundError
+from routers.auth_router import router as auth_router
 from routers.bank_account_router import router as bank_account_router
 from routers.bank_transaction_router import router as bank_transaction_router
 from routers.demat_account_router import router as demat_account_router
@@ -18,6 +19,8 @@ from routers.demat_transaction_router import router as demat_transaction_router
 from routers.user_router import router as user_router
 
 app = FastAPI(title="Finance Portfolio Tracker", version="1.0.0")
+
+app.include_router(auth_router)
 
 app.include_router(user_router)
 app.include_router(bank_account_router)
@@ -145,6 +148,7 @@ async def invalid_credentials_handler(
         status_code=401,
         content={"detail": str(exc)},
     )
+
 
 
 
