@@ -1,14 +1,15 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
-from exceptions.bank_account_exceptions import AccountNotFoundError
+from exceptions.bank_account_exceptions import AccountNotFoundError, DuplicateAccountNumberError
 from exceptions.bank_transaction_exceptions import (
     CategoryNotFoundError,
+    InsufficientFundsError,
     TransactionNotFoundError,
 )
 from exceptions.demat_account_exceptions import DematAccountNotFoundError
-from exceptions.demat_transaction_exceptions import HoldingNotFoundError
-from exceptions.user_service_exceptions import UserNotFoundError
+from exceptions.demat_transaction_exceptions import HoldingNotFoundError, InsufficientSharesError, InvalidTransactionTypeError
+from exceptions.user_service_exceptions import DuplicateEmailError, DuplicatePhoneError, UserNotFoundError
 from routers.bank_account_router import router as bank_account_router
 from routers.bank_transaction_router import router as bank_transaction_router
 from routers.demat_account_router import router as demat_account_router
@@ -80,5 +81,61 @@ async def holding_not_found_handler(
         status_code=404,
         content={"detail": str(exc)},
     )
+
+@app.exception_handler(DuplicateEmailError)
+async def duplicate_email_handler(
+    request: Request, exc: DuplicateEmailError
+):
+    return JSONResponse(
+        status_code=409,
+        content={"detail": str(exc)},
+    )
+
+@app.exception_handler(DuplicatePhoneError)
+async def duplicate_phone_handler(
+    request: Request, exc: DuplicatePhoneError
+):
+    return JSONResponse(
+        status_code=409,
+        content={"detail": str(exc)},
+    )
+
+@app.exception_handler(DuplicateAccountNumberError)
+async def duplicate_account_number_handler(
+    request: Request, exc: DuplicateAccountNumberError
+):
+    return JSONResponse(
+        status_code=409,
+        content={"detail": str(exc)},
+    )
+
+@app.exception_handler(InsufficientFundsError)
+async def insufficient_funds_handler(
+    request: Request, exc: InsufficientFundsError
+):
+    return JSONResponse(
+        status_code=400,
+        content={"detail": str(exc)},
+    )
+
+@app.exception_handler(InsufficientSharesError)
+async def insufficient_shares_handler(
+    request: Request, exc: InsufficientSharesError
+):
+    return JSONResponse(
+        status_code=400,
+        content={"detail": str(exc)},
+    )
+
+@app.exception_handler(InvalidTransactionTypeError)
+async def invalid_transaction_type_handler(
+    request: Request, exc: InvalidTransactionTypeError
+):
+    return JSONResponse(
+        status_code=400,
+        content={"detail": str(exc)},
+    )
+
+
 
 
