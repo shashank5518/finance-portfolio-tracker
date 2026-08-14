@@ -1,7 +1,8 @@
 from exceptions.auth_exceptions import InvalidCredentialsError
+from models.user import User
 from repositories.user_repository import UserRepository
 from schemas.auth import TokenResponse
-from utils.security import create_access_token, verify_password
+from utils.security import create_access_token, decode_access_token, verify_password
 
 
 class AuthService:
@@ -24,3 +25,12 @@ class AuthService:
             access_token = access_token,
             token_type = "bearer",
         )
+
+    def get_current_user(self, token: str) -> User:
+        payload = decode_access_token(token)
+        user_id = int(payload["sub"])
+        user = self.user_repo.find_by_id(user_id)
+
+        if user is None:
+            raise InvalidCredentialsError("User no longer exists.")
+        return user
