@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
 from exceptions.auth_exceptions import InvalidCredentialsError
-from exceptions.bank_account_exceptions import AccountNotFoundError, DuplicateAccountNumberError
+from exceptions.bank_account_exceptions import AccountNotFoundError, DuplicateAccountNumberError, ForbiddenError
 from exceptions.bank_transaction_exceptions import (
     CategoryNotFoundError,
     InsufficientFundsError,
@@ -146,6 +146,15 @@ async def invalid_credentials_handler(
 ):
     return JSONResponse(
         status_code=401,
+        content={"detail": str(exc)},
+    )
+
+@app.exception_handler(ForbiddenError)
+async def forbidden_access_handler(
+    request: Request, exc: ForbiddenError
+):
+    return JSONResponse(
+        status_code=403,
         content={"detail": str(exc)},
     )
 

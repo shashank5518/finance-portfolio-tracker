@@ -18,8 +18,7 @@ class BankAccountUpdate(BaseModel):
 
 
 class BankAccountCreate(BankAccountBase):
-    user_id: int
-
+    pass
 
 class BankAccountResponse(BankAccountBase):
     id: int
