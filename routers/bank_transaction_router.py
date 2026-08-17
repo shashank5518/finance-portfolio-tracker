@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, status
 
+from dependencies.auth_dependencies import get_current_user
 from dependencies.bank_transaction_dependencies import get_bank_transaction_service
+from models.user import User
 from schemas.bank_transaction import BankTransactionCreate, BankTransactionResponse
 from service.bank_transaction_service import BankTransactionService
 
@@ -16,10 +18,10 @@ router = APIRouter(prefix="/bank_transactions", tags=["BankTransactions"])
 )
 def create_transaction(
     bank_transaction: BankTransactionCreate,
+    current_user: User = Depends(get_current_user),
     service: BankTransactionService = Depends(get_bank_transaction_service),
 ):
-    return service.create_transaction(bank_transaction)
-
+    return service.create_transaction(bank_transaction, current_user)
 
 @router.get(
     "/recent",

@@ -5,6 +5,8 @@ from datetime import datetime
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from models.bank_account import BankAccount
+
 # from psycopg2.extensions import connection
 # from config.database_connection import get_cursor
 from models.bank_transaction import BankTransaction
@@ -29,12 +31,19 @@ class BankTransactionRepository:
             logger.debug("No transactions frmo account: %d", account_id)
         return account
 
-    def find_by_category_id(self, category_id: int) -> Sequence[BankTransaction]:
-        stmt = select(BankTransaction).where(BankTransaction.category_id == category_id)
-        category = self.session.execute(stmt).scalars().all()
-        if not category:
-            logger.debug("No transactions with category id: %d", category_id)
-        return category
+    def find_by_category_id(self, category_id: int, user_id: int) -> Sequence[BankTransaction]:
+        return (
+            self.session.query(BankTransaction)
+            .join(
+                BankAccount,
+                BankTransaction.bank_account_id == BankAccount.id,
+            )
+            .filter(
+                BankTransaction.category_id == category_id,
+                BankAccount.user_id == user_id,
+            )
+            .all()
+        )
 
     def find_by_date_range(
         self, from_time: datetime, to_time: datetime
