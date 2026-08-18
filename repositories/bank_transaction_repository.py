@@ -58,16 +58,20 @@ class BankTransactionRepository:
             logger.debug("No transactions between %s and %s", from_time, to_time)
         return transactions
 
-    def find_recent_transactions(self, limit: int = 5) -> Sequence[BankTransaction]:
-        stmt = (
-            select(BankTransaction)
+    def find_recent_transactions(self, user_id: int, limit: int = 10) -> Sequence[BankTransaction]:
+        return (
+            self.session.query(BankTransaction)
+            .join(
+                BankAccount,
+                BankTransaction.bank_account_id == BankAccount.id,
+            )
+            .filter(
+                BankAccount.user_id == user_id,
+            )
             .order_by(BankTransaction.transaction_timestamp.desc())
             .limit(limit)
+            .all()
         )
-        transactions = self.session.execute(stmt).scalars().all()
-        if not transactions:
-            logger.debug("No transactions done recently")
-        return transactions
 
     def find_by_account_and_date_range(
         self, account_id: int, from_time: datetime, to_time: datetime

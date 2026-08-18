@@ -28,30 +28,34 @@ def create_transaction(
     response_model=list[BankTransactionResponse],
 )
 def get_recent_transactions(
+    current_user: User = Depends(get_current_user),
     service: BankTransactionService = Depends(get_bank_transaction_service),
 ):
-    return service.get_recent_transactions()
+    return service.get_recent_transactions(current_user)
 
 
 @router.get("/{transaction_id}", response_model=BankTransactionResponse)
 def get_transaction_by_id(
     transaction_id: int,
+    current_user: User = Depends(get_current_user),
     service: BankTransactionService = Depends(get_bank_transaction_service),
 ):
-    return service.get_transaction_by_id(transaction_id)
+    return service.get_transaction_by_id(transaction_id, current_user)
 
 
 @router.get("/account/{account_id}", response_model=list[BankTransactionResponse])
 def get_transaction_by_account(
     account_id: int,
+    current_user: User = Depends(get_current_user),
     service: BankTransactionService = Depends(get_bank_transaction_service),
 ):
-    return service.get_transactions_by_account(account_id)
+    return service.get_transactions_by_account(account_id, current_user)
 
 
 @router.get("/category/{category_id}", response_model=list[BankTransactionResponse])
 def get_transaction_by_category(
     category_id: int,
+    current_user: User = Depends(get_current_user),
     service: BankTransactionService = Depends(get_bank_transaction_service),
 ):
-    return service.get_transactions_by_category(category_id)
+    return service.get_transactions_by_category(category_id, current_user)
