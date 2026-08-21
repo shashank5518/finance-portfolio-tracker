@@ -1,261 +1,352 @@
 # Finance Portfolio Tracker
 
-A personal finance management system built in Python for tracking bank accounts, transactions, demat accounts, and investment portfolios.
+A production-style backend API for managing personal finances and investment portfolios. Built with **FastAPI**, **SQLAlchemy 2.0**, and **PostgreSQL**, the application allows users to securely manage bank accounts, demat accounts, transactions, and investment holdings with JWT authentication and layered architecture.
+
+---
+
+## Features
+
+- User registration and authentication
+- Password hashing using bcrypt
+- JWT-based authentication and authorization
+- Bank account management
+- Bank transaction management
+- Demat account management
+- Demat transaction management
+- Investment holdings tracking
+- Role-based resource authorization (users can only access their own data)
+- Custom exception hierarchy
+- Dependency Injection
+- SQLAlchemy 2.0 ORM
+- Alembic database migrations
+- Interactive Swagger API documentation
+
+---
 
 ## Tech Stack
 
-- Python
+- Python 3.13
 - FastAPI
-- PostgreSQL
 - SQLAlchemy 2.0
-- psycopg2
+- PostgreSQL
 - Alembic
-- Pydantic
+- bcrypt
+- PyJWT
+- python-dotenv
 - pytest
+- Ruff
+- Black
+- MyPy
+
+---
 
 ## Architecture
 
-The project follows a layered architecture that separates API handling, business logic, and data persistence.
+The project follows a layered architecture.
 
-```text
-                    FastAPI
-                       │
-                    Routers
-                       │
-                Pydantic Schemas
-                       │
-                    Services
-                       │
-                  Repositories
-                       │
-                SQLAlchemy ORM
-                       │
-                   PostgreSQL
-Models
+```
+Client
+   │
+   ▼
+Routers (FastAPI)
+   │
+   ▼
+Services (Business Logic)
+   │
+   ▼
+Repositories (Database Access)
+   │
+   ▼
+PostgreSQL
+```
 
-SQLAlchemy 2.0 ORM models using typed Mapped attributes.
+### Project Structure
 
-Schemas
-
-Pydantic models used for API request validation and response serialization.
-
-Routers
-
-FastAPI routers responsible for handling HTTP requests, dependency injection, and API responses.
-
-Services
-
-Business logic and validation, including custom exception handling and domain-level rules.
-
-Repositories
-
-Data-access layer responsible for database operations. The project contains both raw psycopg2 repositories and SQLAlchemy-based repositories.
-
-Migrations
-
-Alembic is used for database schema versioning and migrations.
-
-Database Schema
-
-The database currently contains 7 tables:
-
-users
-bank_accounts
-bank_categories
-bank_transactions
-demat_accounts
-demat_holdings
-demat_transactions
-Database Relationships
-User
-├── Bank Accounts
-│   └── Bank Transactions
-│       └── Bank Categories
-│
-└── Demat Accounts
-    └── Demat Holdings
-        └── Demat Transactions
-API
-
-The application currently exposes FastAPI endpoints for users, bank accounts, and bank transactions.
-
-Users
-Method	Endpoint	Description
-GET	/users/	Get all users
-GET	/users/{user_id}	Get a user by ID
-POST	/users/	Create a new user
-PUT	/users/{user_id}	Update a user
-DELETE	/users/{user_id}	Delete a user
-Bank Accounts
-Method	Endpoint	Description
-POST	/bank_accounts/	Create a bank account
-GET	/bank_accounts/{account_id}	Get a bank account by ID
-GET	/bank_accounts/users/{user_id}	Get all bank accounts belonging to a user
-PUT	/bank_accounts/{account_id}	Update the bank account name
-DELETE	/bank_accounts/{account_id}	Delete a bank account
-Bank Transactions
-Method	Endpoint	Description
-POST	/bank_transactions/	Create a bank transaction
-GET	/bank_transactions/recent	Get recent transactions
-GET	/bank_transactions/{transaction_id}	Get a transaction by ID
-GET	/bank_transactions/account/{account_id}	Get transactions for a bank account
-GET	/bank_transactions/category/{category_id}	Get transactions by category
-Transaction Business Logic
-
-Creating a bank transaction performs validation before persisting the transaction:
-
-Validates that the bank account exists
-Validates that the category exists
-Validates that the transaction amount is greater than zero
-Handles CREDIT transactions by increasing the account balance
-Handles DEBIT transactions by decreasing the account balance
-Prevents debit transactions when the account has insufficient funds
-Updates the bank account balance when the transaction is created
-API Documentation
-
-FastAPI automatically provides interactive API documentation.
-
-Swagger UI
-http://127.0.0.1:8000/docs
-ReDoc
-http://127.0.0.1:8000/redoc
-Health Check
-GET /health
-
-Returns:
-
-{
-    "status": "healthy"
-}
-Project Structure
+```
 finance_portfolio_tracker/
 │
-├── alembic/
-├── config/
+├── routers/
+├── service/
+├── repositories/
+├── models/
+├── schemas/
 ├── dependencies/
 ├── exceptions/
-├── models/
-├── repositories/
-├── routers/
-├── schemas/
-├── service/
-├── sql/
+├── utils/
+├── config/
+├── migrations/
 ├── tests/
-│
-├── .env
-├── alembic.ini
-├── create_schema.py
 ├── main.py
-├── main_run.py
-├── pyproject.toml
-├── README.md
 └── requirements.txt
-Setup
-1. Clone the repository
-git clone <repository-url>
-cd finance_portfolio_tracker
-2. Create a virtual environment
-python -m venv .venv
+```
 
-Activate the virtual environment.
+---
 
-Windows:
+## Database Schema
 
-.venv\Scripts\activate
+The application consists of the following tables:
 
-Linux/macOS:
+- users
+- bank_accounts
+- bank_categories
+- bank_transactions
+- demat_accounts
+- demat_holdings
+- demat_transactions
 
-source .venv/bin/activate
-3. Install dependencies
-pip install -r requirements.txt
-4. Configure environment variables
+---
 
-Create a .env file and provide your PostgreSQL database credentials:
+## API Endpoints
 
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=your_database
-DB_USER=your_user
-DB_PASS=your_password
-5. Run database migrations
-alembic upgrade head
-6. Start the FastAPI application
+### Authentication
 
-For development:
+| Method | Endpoint |
+|---------|----------|
+| POST | `/auth/login` |
+| GET | `/auth/me` |
 
-fastapi dev main.py
+---
 
-The API will be available at:
+### Users
 
-http://127.0.0.1:8000
-Testing
+| Method | Endpoint |
+|---------|----------|
+| POST | `/users/` |
+| GET | `/users/{user_id}` |
+| PUT | `/users/{user_id}` |
+| DELETE | `/users/{user_id}` |
 
-Run the test suite using:
+---
 
-pytest
-Error Handling
+### Bank Accounts
 
-The application uses a custom exception hierarchy in the service layer.
+| Method | Endpoint |
+|---------|----------|
+| POST | `/bank_accounts/` |
+| GET | `/bank_accounts/me` |
+| GET | `/bank_accounts/{account_id}` |
+| PUT | `/bank_accounts/{account_id}` |
+| DELETE | `/bank_accounts/{account_id}` |
+
+---
+
+### Bank Transactions
+
+| Method | Endpoint |
+|---------|----------|
+| POST | `/bank_transactions/` |
+| GET | `/bank_transactions/recent` |
+| GET | `/bank_transactions/{transaction_id}` |
+| GET | `/bank_transactions/account/{account_id}` |
+| GET | `/bank_transactions/category/{category_id}` |
+
+---
+
+### Demat Accounts
+
+| Method | Endpoint |
+|---------|----------|
+| POST | `/demat_accounts/` |
+| GET | `/demat_accounts/me` |
+| GET | `/demat_accounts/{account_id}` |
+| PUT | `/demat_accounts/{account_id}` |
+| DELETE | `/demat_accounts/{account_id}` |
+
+---
+
+### Demat Transactions
+
+| Method | Endpoint |
+|---------|----------|
+| POST | `/demat_transactions/` |
+| GET | `/demat_transactions/{transaction_id}` |
+| GET | `/demat_transactions/account/{account_id}` |
+
+---
+
+## Authentication
+
+Authentication is implemented using JWT access tokens.
+
+### Login
+
+```
+POST /auth/login
+```
+
+Returns
+
+```json
+{
+    "access_token": "<jwt_token>",
+    "token_type": "bearer"
+}
+```
+
+Authorize requests using
+
+```
+Authorization: Bearer <access_token>
+```
+
+Protected endpoints require a valid JWT token.
+
+---
+
+## Authorization
+
+Every authenticated user can only access their own resources.
+
+Ownership checks are enforced for:
+
+- Bank Accounts
+- Bank Transactions
+- Demat Accounts
+- Demat Transactions
+
+Attempts to access another user's data return **403 Forbidden**.
+
+---
+
+## Error Handling
+
+The application includes custom exception handling for common business cases.
 
 Examples include:
 
-UserNotFoundError
-DuplicateEmailError
-AccountNotFoundError
-CategoryNotFoundError
-InsufficientFundsError
+- UserNotFoundError
+- DuplicateEmailError
+- DuplicatePhoneError
+- AccountNotFoundError
+- DuplicateAccountNumberError
+- CategoryNotFoundError
+- TransactionNotFoundError
+- DematAccountNotFoundError
+- HoldingNotFoundError
+- InsufficientFundsError
+- InsufficientSharesError
+- InvalidTransactionTypeError
+- ForbiddenError
 
-These domain-level exceptions are handled by FastAPI exception handlers and mapped to appropriate HTTP responses.
+---
 
-For example:
+## Installation
 
-UserNotFoundError
-        ↓
-HTTP 404 Not Found
-DuplicateEmailError
-        ↓
-HTTP 409 Conflict
-Database Transactions
+Clone the repository
 
-Database operations use SQLAlchemy sessions with explicit transaction handling.
+```bash
+git clone <repository-url>
+```
 
-Successful operations are committed, while exceptions trigger a rollback.
+Create a virtual environment
 
-Request
-   │
-   ▼
-Service
-   │
-   ├── Success ──→ Commit
-   │
-   └── Exception ──→ Rollback
+```bash
+python -m venv .venv
+```
 
-This is particularly important for bank transactions, where creating a transaction and updating the corresponding bank account balance should occur within the same database transaction.
+Activate it
 
-Project Status
-Completed
-PostgreSQL database design
-SQLAlchemy 2.0 ORM models
-Raw psycopg2 repository implementations
-SQLAlchemy repository implementations
-Service layer
-Custom exception hierarchy
-FastAPI application setup
-FastAPI dependency injection
-Pydantic request/response schemas
-Global FastAPI exception handlers
-Alembic migrations
-User API
-Bank Account API
-Bank Transaction API
-Bank transaction balance management
-API validation and error handling
-In Progress
-Demat Account API
-Demat Holdings API
-Demat Transaction API
-Investment portfolio APIs
-Portfolio aggregation and analytics
-Authentication and authorization
-Password hashing
-Additional API and integration tests
+### Windows
+
+```bash
+.venv\Scripts\activate
+```
+
+### Linux / macOS
+
+```bash
+source .venv/bin/activate
+```
+
+Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+Create a `.env` file
+
+```env
+DATABASE_URL=postgresql://username:password@localhost:5432/database_name
+
+JWT_SECRET_KEY=your-secret-key
+JWT_ALGORITHM=HS256
+JWT_ACCESS_TOKEN_EXPIRE_MINUTES=30
+```
+
+Run migrations
+
+```bash
+alembic upgrade head
+```
+
+Start the application
+
+```bash
+uvicorn main:app --reload
+```
+
+---
+
+## API Documentation
+
+Swagger UI
+
+```
+http://localhost:8000/docs
+```
+
+ReDoc
+
+```
+http://localhost:8000/redoc
+```
+
+---
+
+## Development Tools
+
+Code formatting
+
+```bash
+black .
+```
+
+Linting
+
+```bash
+ruff check .
+```
+
+Type checking
+
+```bash
+mypy .
+```
+
+Run tests
+
+```bash
+pytest
+```
+
+---
+
+## Future Improvements
+
+- Refresh token authentication
+- Docker support
+- CI/CD with GitHub Actions
+- Portfolio analytics
+- Stock market integration
+- Email verification
+- Password reset
+- Rate limiting
+- Pagination and filtering
+- API versioning
+
+---
+
+## License
+
+This project is intended for learning and portfolio purposes.
