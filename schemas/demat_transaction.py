@@ -11,8 +11,10 @@ class DematTransactionBase(BaseModel):
     price_per_unit: Decimal
     brokerage: Decimal
 
+
 class DematTransactionCreate(DematTransactionBase):
     holding_id: int
+
 
 class DematTransactionResponse(DematTransactionBase):
     id: int

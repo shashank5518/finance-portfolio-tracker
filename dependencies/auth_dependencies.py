@@ -13,8 +13,9 @@ def get_auth_service(
 ) -> AuthService:
     return AuthService(user_repo)
 
+
 def get_current_user(
-        token: str = Depends(oauth2_scheme),
-        service: AuthService = Depends(get_auth_service),
+    token: str = Depends(oauth2_scheme),
+    service: AuthService = Depends(get_auth_service),
 ):
     return service.get_current_user(token)

@@ -7,10 +7,8 @@ from schemas.auth import LoginRequest, TokenResponse
 from schemas.user import UserResponse
 from service.auth_service import AuthService
 
-router = APIRouter(
-    prefix="/auth",
-    tags=["Authentication"]
-)
+router = APIRouter(prefix="/auth", tags=["Authentication"])
+
 
 @router.post("/login", response_model=TokenResponse)
 def login(
@@ -18,6 +16,7 @@ def login(
     service: AuthService = Depends(get_auth_service),
 ):
     return service.login(form_data.username, form_data.password)
+
 
 @router.get("/me", response_model=UserResponse)
 def me(current_user: User = Depends(get_current_user)):

@@ -68,7 +68,9 @@ class BankTransactionService:
         )
         return self.transaction_repo.create(transaction)
 
-    def get_transaction_by_id(self, transaction_id: int, current_user: User) -> BankTransaction:
+    def get_transaction_by_id(
+        self, transaction_id: int, current_user: User
+    ) -> BankTransaction:
         transaction = self.transaction_repo.find_by_id(transaction_id)
         if transaction is None:
             raise TransactionNotFoundError(f"Transaction '{transaction_id}' not found")
@@ -81,14 +83,14 @@ class BankTransactionService:
             raise ForbiddenError("You are not authorized to access this transaction.")
         return transaction
 
-    def get_transactions_by_account(self, account_id: int, current_user: User) -> Sequence[BankTransaction]:
+    def get_transactions_by_account(
+        self, account_id: int, current_user: User
+    ) -> Sequence[BankTransaction]:
         account = self.account_repo.find_by_id(account_id)
         if account is None:
             raise AccountNotFoundError(f"Account '{account_id}' not found.")
         if account.user_id != current_user.id:
-            raise ForbiddenError(
-                "You are not authorized to access this account."
-            )
+            raise ForbiddenError("You are not authorized to access this account.")
         return self.transaction_repo.find_by_account_id(account_id)
 
     def get_transactions_by_category(
@@ -99,5 +101,7 @@ class BankTransactionService:
             raise CategoryNotFoundError(f"Category '{category_id}' not found.")
         return self.transaction_repo.find_by_category_id(category_id, current_user.id)
 
-    def get_recent_transactions(self, current_user: User, limit: int = 10) -> Sequence[BankTransaction]:
+    def get_recent_transactions(
+        self, current_user: User, limit: int = 10
+    ) -> Sequence[BankTransaction]:
         return self.transaction_repo.find_recent_transactions(current_user.id, limit)

@@ -23,6 +23,7 @@ def create_transaction(
 ):
     return service.create_transaction(bank_transaction, current_user)
 
+
 @router.get(
     "/recent",
     response_model=list[BankTransactionResponse],

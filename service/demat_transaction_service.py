@@ -60,10 +60,10 @@ class DematTransactionService:
                 f"Transaction type '{transaction_data.transaction_type}' is invalid."
             )
         transaction = DematTransaction(
-            holding_id = transaction_data.holding_id,
-            transaction_type = transaction_data.transaction_type,
-            quantity = transaction_data.quantity,
-            price_per_unit = transaction_data.price_per_unit,
-            brokerage = transaction_data.brokerage
+            holding_id=transaction_data.holding_id,
+            transaction_type=transaction_data.transaction_type,
+            quantity=transaction_data.quantity,
+            price_per_unit=transaction_data.price_per_unit,
+            brokerage=transaction_data.brokerage,
         )
         return self.transaction_repo.create(transaction)

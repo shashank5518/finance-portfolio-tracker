@@ -27,12 +27,14 @@ def create_account(
 ):
     return service.create_account(bank_account, current_user.id)
 
+
 @router.get("/me", response_model=list[BankAccountResponse])
 def get_my_accounts(
     current_user: User = Depends(get_current_user),
-    service: BankAccountService = Depends(get_bank_account_service)
+    service: BankAccountService = Depends(get_bank_account_service),
 ):
     return service.get_accounts_by_user(current_user.id)
+
 
 @router.get("/{account_id}", response_model=BankAccountResponse)
 def get_account(
@@ -50,6 +52,7 @@ def get_account(
 # ):
 #     return service.get_accounts_by_user(user_id)
 
+
 @router.put("/{account_id}", response_model=BankAccountResponse)
 def update_account_name(
     account_id: int,
@@ -57,7 +60,9 @@ def update_account_name(
     current_user: User = Depends(get_current_user),
     service: BankAccountService = Depends(get_bank_account_service),
 ):
-    return service.update_account_name(account_id, current_user, account_name.account_name)
+    return service.update_account_name(
+        account_id, current_user, account_name.account_name
+    )
 
 
 @router.delete("/{account_id}", status_code=status.HTTP_204_NO_CONTENT)

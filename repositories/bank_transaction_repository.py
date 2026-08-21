@@ -31,7 +31,9 @@ class BankTransactionRepository:
             logger.debug("No transactions frmo account: %d", account_id)
         return account
 
-    def find_by_category_id(self, category_id: int, user_id: int) -> Sequence[BankTransaction]:
+    def find_by_category_id(
+        self, category_id: int, user_id: int
+    ) -> Sequence[BankTransaction]:
         return (
             self.session.query(BankTransaction)
             .join(
@@ -58,7 +60,9 @@ class BankTransactionRepository:
             logger.debug("No transactions between %s and %s", from_time, to_time)
         return transactions
 
-    def find_recent_transactions(self, user_id: int, limit: int = 10) -> Sequence[BankTransaction]:
+    def find_recent_transactions(
+        self, user_id: int, limit: int = 10
+    ) -> Sequence[BankTransaction]:
         return (
             self.session.query(BankTransaction)
             .join(

@@ -20,6 +20,7 @@ class BankAccountUpdate(BaseModel):
 class BankAccountCreate(BankAccountBase):
     pass
 
+
 class BankAccountResponse(BankAccountBase):
     id: int
     model_config = ConfigDict(from_attributes=True)

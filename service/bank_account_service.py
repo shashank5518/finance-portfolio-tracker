@@ -1,6 +1,10 @@
 from collections.abc import Sequence
 
-from exceptions.bank_account_exceptions import AccountNotFoundError, DuplicateAccountNumberError, ForbiddenError
+from exceptions.bank_account_exceptions import (
+    AccountNotFoundError,
+    DuplicateAccountNumberError,
+    ForbiddenError,
+)
 from exceptions.user_service_exceptions import (
     UserNotFoundError,
 )
@@ -21,7 +25,9 @@ class BankAccountService:
         self.user_repo = user_repo
         self.bank_repo = bank_repo
 
-    def create_account(self, account_data: BankAccountCreate, user_id: int) -> BankAccount:
+    def create_account(
+        self, account_data: BankAccountCreate, user_id: int
+    ) -> BankAccount:
         user = self.user_repo.find_by_id(user_id)
         if user is None:
             raise UserNotFoundError(f"User '{user_id}' not found")
@@ -39,7 +45,11 @@ class BankAccountService:
         )
         return self.bank_repo.create(bank_account)
 
-    def get_account_by_id(self, account_id: int, current_user: User,) -> BankAccount:
+    def get_account_by_id(
+        self,
+        account_id: int,
+        current_user: User,
+    ) -> BankAccount:
         account = self.bank_repo.find_by_id(account_id)
         if account is None:
             raise AccountNotFoundError(f"Account '{account_id}' not found")
@@ -53,7 +63,9 @@ class BankAccountService:
             raise UserNotFoundError(f"User '{user_id}' not found")
         return self.bank_repo.find_all_by_user(user_id)
 
-    def update_account_name(self, account_id: int, current_user: User, new_name) -> BankAccount:
+    def update_account_name(
+        self, account_id: int, current_user: User, new_name
+    ) -> BankAccount:
         account = self.bank_repo.find_by_id(account_id)
         if account is None:
             raise AccountNotFoundError(f"Account '{account_id}' not found")

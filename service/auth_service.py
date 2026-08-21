@@ -10,7 +10,11 @@ class AuthService:
     def __init__(self, user_repo: UserRepository) -> None:
         self.user_repo = user_repo
 
-    def login(self, email: str, password: str,):
+    def login(
+        self,
+        email: str,
+        password: str,
+    ):
         user = self.user_repo.find_by_email(email)
 
         if user is None:
@@ -22,8 +26,8 @@ class AuthService:
         access_token = create_access_token(user.id)
 
         return TokenResponse(
-            access_token = access_token,
-            token_type = "bearer",
+            access_token=access_token,
+            token_type="bearer",
         )
 
     def get_current_user(self, token: str) -> User:
