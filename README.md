@@ -1,4 +1,4 @@
-# Finance Portfolio Tracker
+# Finance Portfolio Backend API
 
 A production-style backend API for managing personal finances and investment portfolios. Built with **FastAPI**, **SQLAlchemy 2.0**, and **PostgreSQL**, the application allows users to securely manage bank accounts, demat accounts, transactions, and investment holdings with JWT authentication and layered architecture.
 
