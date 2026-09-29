@@ -46,7 +46,7 @@ class BankTransactionService:
             )
         if transaction_data.amount <= 0:
             raise ValueError("Transaction amount must be greater than zero.")
-        elif transaction_data.transaction_type == TransactionType.CREDIT:
+        if transaction_data.transaction_type == TransactionType.CREDIT:
             new_balance = account.balance + transaction_data.amount
         elif transaction_data.transaction_type == TransactionType.DEBIT:
             if account.balance < transaction_data.amount:
